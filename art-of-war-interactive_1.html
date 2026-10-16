@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Art of War — An Interactive Field Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,500&family=Noto+Serif+SC:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#15110d;          /* lacquer ground */
+    --ink-2:#1f1813;        /* raised panel */
+    --ink-3:#2a2118;        /* hover / border-lift */
+    --silk:#ece2cd;         /* aged paper text */
+    --silk-dim:#b7ab92;     /* secondary text */
+    --silk-faint:#7c715d;   /* tertiary / captions */
+    --cinnabar:#c5392c;     /* seal red — the signature */
+    --cinnabar-soft:#d9604f;
+    --bronze:#c2964e;       /* gilt accent */
+    --jade:#6f9183;         /* domain accent */
+    --line:rgba(194,150,78,.22);
+    --line-soft:rgba(236,226,205,.10);
+    --ui: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --serif:"Spectral", "Iowan Old Style", Georgia, "Times New Roman", serif;
+    --han:"Noto Serif SC", "Spectral", serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{
+    margin:0;background:var(--ink);color:var(--silk);
+    font-family:var(--serif);font-size:18px;line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+    background-image:
+      radial-gradient(1200px 600px at 85% -5%, rgba(197,57,44,.10), transparent 60%),
+      radial-gradient(900px 500px at -10% 30%, rgba(194,150,78,.06), transparent 60%);
+  }
+  ::selection{background:var(--cinnabar);color:#fff}
+  a{color:var(--cinnabar-soft);text-underline-offset:3px}
+
+  /* progress + nav */
+  #progress{position:fixed;top:0;left:0;height:3px;width:0;z-index:120;
+    background:linear-gradient(90deg,var(--bronze),var(--cinnabar));transition:width .12s linear}
+  header.bar{position:sticky;top:0;z-index:100;backdrop-filter:blur(10px);
+    background:rgba(21,17,13,.82);border-bottom:1px solid var(--line)}
+  .bar-inner{max-width:1180px;margin:0 auto;padding:10px 22px;display:flex;align-items:center;gap:16px}
+  .brand{font-family:var(--han);color:var(--cinnabar);font-weight:700;font-size:20px;letter-spacing:2px;flex:0 0 auto}
+  .brand small{font-family:var(--ui);color:var(--silk-dim);font-size:11px;letter-spacing:.18em;text-transform:uppercase;display:block;font-weight:600}
+  nav.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;flex:1;padding:2px}
+  nav.chips::-webkit-scrollbar{display:none}
+  nav.chips a{font-family:var(--ui);font-size:12.5px;font-weight:600;letter-spacing:.02em;
+    color:var(--silk-dim);text-decoration:none;padding:6px 11px;border-radius:999px;border:1px solid transparent;white-space:nowrap;transition:.18s}
+  nav.chips a:hover{color:var(--silk);background:var(--ink-2)}
+  nav.chips a.active{color:var(--ink);background:var(--bronze);border-color:var(--bronze)}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:0 22px}
+  section{scroll-margin-top:78px}
+
+  /* hero */
+  .hero{position:relative;overflow:hidden;border-bottom:1px solid var(--line)}
+  .hero .wrap{padding:78px 22px 64px;position:relative;z-index:2}
+  .watermark{position:absolute;right:-2%;top:-6%;z-index:1;font-family:var(--han);font-weight:900;
+    writing-mode:vertical-rl;font-size:clamp(120px,22vw,300px);line-height:.9;
+    color:transparent;-webkit-text-stroke:1.5px rgba(197,57,44,.16);user-select:none;pointer-events:none}
+  .eyebrow{font-family:var(--ui);letter-spacing:.32em;text-transform:uppercase;font-size:12px;font-weight:700;color:var(--bronze)}
+  h1.title{font-weight:800;font-size:clamp(48px,9vw,108px);line-height:.92;margin:14px 0 6px;letter-spacing:-.02em}
+  h1.title em{font-style:italic;color:var(--cinnabar-soft);font-weight:600}
+  .byline{font-family:var(--ui);font-size:14px;color:var(--silk-dim);letter-spacing:.04em}
+  .lead{max-width:640px;margin:26px 0 0;font-size:20px;color:var(--silk)}
+  .lead b{color:var(--bronze);font-weight:600}
+
+  .draw{margin-top:30px;max-width:680px;background:var(--ink-2);border:1px solid var(--line);
+    border-left:4px solid var(--cinnabar);border-radius:6px;padding:18px 20px;display:flex;gap:18px;align-items:flex-start}
+  .draw .q{flex:1;font-style:italic;font-size:18px;min-height:52px}
+  .draw .q span{font-style:normal;display:block;font-family:var(--ui);font-size:12px;letter-spacing:.06em;color:var(--silk-faint);margin-top:8px;text-transform:uppercase}
+  .btn{font-family:var(--ui);font-weight:700;font-size:13px;letter-spacing:.04em;cursor:pointer;
+    border:1px solid var(--bronze);background:transparent;color:var(--bronze);padding:10px 14px;border-radius:6px;transition:.18s;white-space:nowrap}
+  .btn:hover{background:var(--bronze);color:var(--ink)}
+  .btn:focus-visible,a:focus-visible,button:focus-visible{outline:2px solid var(--cinnabar-soft);outline-offset:2px}
+
+  /* section heads */
+  .shead{display:flex;align-items:baseline;gap:16px;margin:64px 0 8px;padding-top:8px}
+  .shead .num{font-family:var(--ui);font-weight:700;color:var(--cinnabar);font-size:13px;letter-spacing:.2em}
+  .shead h2{font-size:clamp(28px,4vw,42px);font-weight:700;margin:0;letter-spacing:-.01em}
+  .sintro{color:var(--silk-dim);max-width:760px;margin:0 0 26px;font-size:17px}
+
+  /* foundations cards */
+  .grid{display:grid;gap:16px}
+  .found{grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+  .pill{background:var(--ink-2);border:1px solid var(--line-soft);border-radius:10px;padding:20px 20px 18px;transition:.2s}
+  .pill:hover{border-color:var(--line);transform:translateY(-3px)}
+  .pill .han{font-family:var(--han);color:var(--bronze);font-size:26px;font-weight:700;line-height:1}
+  .pill h4{margin:12px 0 6px;font-size:19px;font-weight:600}
+  .pill p{margin:0;color:var(--silk-dim);font-size:15.5px;line-height:1.55}
+
+  /* chapter accordion */
+  .toolbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:14px}
+  .toolbar .hint{font-family:var(--ui);font-size:12.5px;color:var(--silk-faint);letter-spacing:.04em}
+  .chapter{border:1px solid var(--line-soft);border-radius:12px;margin-bottom:12px;overflow:hidden;background:linear-gradient(180deg,var(--ink-2),rgba(31,24,19,.4))}
+  .chapter.open{border-color:var(--line)}
+  .chead{display:flex;align-items:center;gap:18px;width:100%;text-align:left;cursor:pointer;
+    background:none;border:none;color:inherit;font-family:inherit;padding:16px 20px}
+  .seal{flex:0 0 auto;width:54px;height:54px;border-radius:7px;background:var(--cinnabar);
+    display:grid;place-items:center;font-family:var(--han);font-weight:700;color:#f6ede0;font-size:27px;
+    box-shadow:inset 0 0 0 2px rgba(0,0,0,.18), 0 4px 14px rgba(197,57,44,.28);transform:rotate(-2deg)}
+  .chead .meta{flex:1;min-width:0}
+  .chead .kch{font-family:var(--ui);font-size:11px;font-weight:700;letter-spacing:.22em;color:var(--cinnabar);text-transform:uppercase}
+  .chead h3{margin:2px 0 3px;font-size:22px;font-weight:700;line-height:1.15}
+  .chead .ess{margin:0;color:var(--silk-dim);font-size:15px}
+  .chev{flex:0 0 auto;color:var(--bronze);transition:transform .25s;font-size:22px;font-family:var(--ui)}
+  .chapter.open .chev{transform:rotate(45deg)}
+  .cbody{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s ease}
+  .chapter.open .cbody{grid-template-rows:1fr}
+  .cbody-inner{overflow:hidden}
+  .cbody-pad{padding:4px 20px 24px;border-top:1px solid var(--line-soft)}
+
+  .says{font-style:italic;color:var(--silk);font-size:18px;border-left:3px solid var(--bronze);
+    padding:6px 0 6px 16px;margin:16px 0 22px}
+  .says b{font-style:normal;color:var(--bronze);font-weight:600}
+
+  .blocks{display:grid;gap:18px;grid-template-columns:1.3fr .85fr}
+  @media(max-width:760px){.blocks{grid-template-columns:1fr}.blocks{gap:14px}}
+  .lbl{font-family:var(--ui);font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--cinnabar);margin:0 0 8px}
+  table{width:100%;border-collapse:collapse;font-size:14.5px}
+  table th,table td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+  table th{font-family:var(--ui);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--silk-faint);font-weight:700}
+  table td:first-child{color:var(--bronze);font-weight:600;white-space:nowrap;font-family:var(--ui);font-size:13px;width:38%}
+  table td{color:var(--silk-dim)}
+  .side{display:flex;flex-direction:column;gap:18px}
+  .card-sm{background:var(--ink);border:1px solid var(--line-soft);border-radius:9px;padding:14px 15px}
+  .card-sm.act{border-color:rgba(111,145,131,.4);background:rgba(111,145,131,.06)}
+  ul.tick{margin:0;padding:0;list-style:none;font-size:14.5px;color:var(--silk-dim)}
+  ul.tick li{position:relative;padding:5px 0 5px 22px;line-height:1.45}
+  ul.tick li::before{content:"";position:absolute;left:0;top:11px;width:7px;height:7px;border-radius:2px;background:var(--bronze);transform:rotate(45deg)}
+  ul.tick.do li::before{background:var(--jade)}
+
+  /* modern applications */
+  .filters{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 22px}
+  .filters button{font-family:var(--ui);font-weight:600;font-size:13.5px;cursor:pointer;color:var(--silk-dim);
+    background:var(--ink-2);border:1px solid var(--line-soft);border-radius:999px;padding:9px 16px;transition:.18s}
+  .filters button:hover{color:var(--silk);border-color:var(--line)}
+  .filters button.on{background:var(--cinnabar);border-color:var(--cinnabar);color:#fff}
+  .apps{grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
+  .app{background:var(--ink-2);border:1px solid var(--line-soft);border-radius:11px;padding:18px 18px 16px;transition:.2s}
+  .app:hover{border-color:var(--line);transform:translateY(-3px)}
+  .app .tag{display:inline-block;font-family:var(--ui);font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--jade);border:1px solid rgba(111,145,131,.4);border-radius:999px;padding:3px 9px;margin-bottom:11px}
+  .app .src{font-family:var(--ui);font-size:11px;color:var(--silk-faint);letter-spacing:.04em;margin-bottom:7px;text-transform:uppercase;font-weight:600}
+  .app h4{margin:0 0 7px;font-size:18px;font-weight:600;color:var(--silk);line-height:1.25}
+  .app p{margin:0;color:var(--silk-dim);font-size:15px;line-height:1.55}
+  .note{font-family:var(--ui);font-size:12.5px;color:var(--silk-faint);background:var(--ink-2);border:1px dashed var(--line);border-radius:8px;padding:12px 14px;margin-top:18px;line-height:1.5}
+
+  /* mirror / self-check */
+  .mirror{background:var(--ink-2);border:1px solid var(--line);border-radius:14px;padding:26px 24px;margin-top:8px}
+  .mirror p.k{margin:0 0 18px;color:var(--silk-dim);font-size:16px;max-width:640px}
+  .faults{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+  .fault{display:flex;gap:12px;align-items:flex-start;background:var(--ink);border:1px solid var(--line-soft);border-radius:9px;padding:13px 14px;cursor:pointer;transition:.18s}
+  .fault:hover{border-color:var(--line)}
+  .fault.sel{border-color:var(--cinnabar);background:rgba(197,57,44,.07)}
+  .fault .box{flex:0 0 auto;width:20px;height:20px;border-radius:5px;border:2px solid var(--silk-faint);margin-top:2px;display:grid;place-items:center;transition:.18s}
+  .fault.sel .box{background:var(--cinnabar);border-color:var(--cinnabar)}
+  .fault .box svg{width:12px;height:12px;opacity:0;transition:.18s}
+  .fault.sel .box svg{opacity:1}
+  .fault strong{display:block;font-size:15px;font-weight:600}
+  .fault small{font-family:var(--ui);font-size:12.5px;color:var(--silk-faint)}
+  .verdict{margin-top:20px;border-top:1px solid var(--line-soft);padding-top:18px;font-style:italic;font-size:18px;color:var(--silk);min-height:30px}
+  .verdict b{font-style:normal;color:var(--bronze)}
+
+  /* cheat sheet */
+  .sheet{width:100%;border-collapse:collapse;font-size:14.5px;background:var(--ink-2);border:1px solid var(--line-soft);border-radius:12px;overflow:hidden}
+  .sheet th,.sheet td{padding:11px 13px;border-bottom:1px solid var(--line-soft);text-align:left;vertical-align:top}
+  .sheet thead th{font-family:var(--ui);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--bronze);background:var(--ink-3)}
+  .sheet td.s{font-family:var(--han);color:var(--cinnabar);font-size:20px;font-weight:700;text-align:center;width:44px}
+  .sheet td.t{font-weight:600;color:var(--silk);white-space:nowrap}
+  .sheet td.now{color:var(--jade)}
+  .sheet tr:hover td{background:rgba(236,226,205,.03)}
+  .sheet td:nth-child(3){color:var(--silk-dim)}
+
+  footer{border-top:1px solid var(--line);margin-top:72px;padding:40px 0 60px}
+  footer .wrap{display:flex;flex-wrap:wrap;gap:24px;justify-content:space-between;align-items:flex-start}
+  footer p{margin:0;color:var(--silk-faint);font-size:13.5px;font-family:var(--ui);max-width:560px;line-height:1.6}
+  footer .seal{cursor:default}
+
+  .reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}
+  .reveal.in{opacity:1;transform:none}
+  @media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}}
+  @media(max-width:620px){
+    body{font-size:17px}
+    .seal{width:46px;height:46px;font-size:22px}
+    .chead{gap:13px;padding:14px 15px}
+    .chead h3{font-size:19px}
+    .cbody-pad{padding:4px 15px 20px}
+  }
+</style>
+</head>
+<body>
+<div id="progress"></div>
+
+<header class="bar">
+  <div class="bar-inner">
+    <div class="brand">兵法<small>The Art of War</small></div>
+    <nav class="chips" id="chips" aria-label="Jump to section"></nav>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero" id="top">
+  <div class="watermark" aria-hidden="true">孫子兵法</div>
+  <div class="wrap">
+    <div class="eyebrow reveal">Sun Tzu · c. 500 BCE · tr. Lionel Giles</div>
+    <h1 class="title reveal">The Art<br>of <em>War</em></h1>
+    <div class="byline reveal">Thirteen chapters · the oldest treatise on strategy · still required reading from war colleges to boardrooms</div>
+    <p class="lead reveal">A 2,500-year-old manual that was never really about war. Strip away the chariots and it is a guide to <b>winning before you fight</b>, knowing yourself, choosing your battles, and reading people and situations clearly. Below: every chapter distilled — and turned into moves you can use this week.</p>
+
+    <div class="draw reveal">
+      <div class="q" id="drawQ">“If you know the enemy and know yourself, you need not fear the result of a hundred battles.”<span>Chapter III · Attack by Stratagem</span></div>
+      <button class="btn" id="drawBtn">Draw a stratagem ↻</button>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+
+  <!-- FOUNDATIONS -->
+  <section id="foundations">
+    <div class="shead reveal"><span class="num">FIRST · THE SPINE</span><h2>Six ideas the whole book hangs on</h2></div>
+    <p class="sintro reveal">If you remember nothing else, remember these. Every chapter is an elaboration of one of them.</p>
+    <div class="grid found">
+      <div class="pill reveal"><div class="han">知</div><h4>Know self & other</h4><p>Self-knowledge plus reading the other side removes most of the risk. Know neither and you lose every time.</p></div>
+      <div class="pill reveal"><div class="han">全</div><h4>Win without fighting</h4><p>The supreme skill is breaking resistance without a battle. The cheapest victory is the one nobody had to bleed for.</p></div>
+      <div class="pill reveal"><div class="han">詐</div><h4>All is deception</h4><p>Manage perception. Appear weak when strong, far when near. What people expect, you can exploit.</p></div>
+      <div class="pill reveal"><div class="han">先</div><h4>Win first, then fight</h4><p>The good strategist arranges things so victory is settled before the first move. Then the fight just confirms it.</p></div>
+      <div class="pill reveal"><div class="han">水</div><h4>Be like water</h4><p>Avoid strength, strike weakness. Keep no fixed shape — adapt your tactics to whatever is in front of you.</p></div>
+      <div class="pill reveal"><div class="han">速</div><h4>Prize speed</h4><p>No nation ever profited from a drawn-out war. Decide, move, and don't let any contest outlast its value.</p></div>
+    </div>
+  </section>
+
+  <!-- CHAPTERS -->
+  <section id="chapters">
+    <div class="shead reveal"><span class="num">SECOND · THE THIRTEEN</span><h2>The chapters, distilled</h2></div>
+    <p class="sintro reveal">Each chapter below opens to its core teaching, a table of key points, what to remember, and concrete action steps. Tap any title to expand.</p>
+    <div class="toolbar reveal">
+      <span class="hint">13 chapters · tap to open</span>
+      <button class="btn" id="toggleAll">Expand all</button>
+    </div>
+    <div id="chapterList"></div>
+  </section>
+
+  <!-- MODERN APPLICATIONS -->
+  <section id="apply">
+    <div class="shead reveal"><span class="num">THIRD · MAKE IT MODERN</span><h2>Apply it today</h2></div>
+    <p class="sintro reveal">Same wisdom, no battlefield. Filter by the part of your life you're working on — each card maps an ancient principle to a move you can actually make.</p>
+    <div class="filters reveal" id="filters" role="tablist"></div>
+    <div class="grid apps" id="appList"></div>
+    <div class="note" id="advNote" style="display:none">A note on the investing cards: these illustrate Sun Tzu's principles applied to decision-making and temperament — they are not financial advice. I'm not a financial advisor; treat them as ways of thinking, not recommendations, and do your own research.</div>
+  </section>
+
+  <!-- MIRROR -->
+  <section id="mirror">
+    <div class="shead reveal"><span class="num">FOURTH · KNOW YOURSELF</span><h2>The strategist's mirror</h2></div>
+    <p class="sintro reveal">Sun Tzu names five faults that ruin a leader (Chapter VIII). Half of strategy is knowing your own. Check the ones that sound like you — be honest, this is for you alone.</p>
+    <div class="mirror reveal">
+      <p class="k">"When an army is overthrown, the cause will be found among these five faults. Let them be a subject of meditation."</p>
+      <div class="faults" id="faults"></div>
+      <div class="verdict" id="verdict">Select what fits — your reading appears here.</div>
+    </div>
+  </section>
+
+  <!-- CHEAT SHEET -->
+  <section id="cheat">
+    <div class="shead reveal"><span class="num">FIFTH · ON ONE PAGE</span><h2>The whole campaign at a glance</h2></div>
+    <p class="sintro reveal">Thirteen chapters, one line each, plus what it means for you today.</p>
+    <div class="reveal" style="overflow-x:auto">
+      <table class="sheet" id="sheet">
+        <thead><tr><th>#</th><th></th><th>Chapter</th><th>In one line</th><th>For you today</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="wrap">
+    <p><b style="color:var(--bronze)">The Art of War</b> by Sun Tzu, translated by Lionel Giles. This interactive guide distills all thirteen chapters into key points, takeaways, and modern applications — a study aid, not a replacement for reading the original, which rewards every re-reading. The source edition is a dual-language volume bound by hand using the centuries-old Chinese "stitched binding" method.</p>
+    <div class="seal" style="width:62px;height:62px;font-size:30px" aria-hidden="true">孫</div>
+  </div>
+</footer>
+
+<script>
+/* ---------- DATA ---------- */
+const chapters = [
+ {n:"I",seal:"計",title:"Laying Plans",essence:"Win the war on paper before the first blow is struck.",
+  says:"<b>Sun Tzu:</b> The general who wins makes many calculations in his temple ere the battle is fought — and all warfare is based on deception.",
+  table:[["The Five Factors","Moral Law (shared purpose), Heaven (timing), Earth (terrain), the Commander (wisdom · sincerity · benevolence · courage · strictness), Method (organization & discipline)."],
+         ["Seven comparisons","Weigh both sides on each factor — leadership, ability, conditions, discipline, strength, training, fairness of reward."],
+         ["Deception toolkit","Seem unable when able, far when near; bait the greedy; feign disorder; irritate the hot-tempered; appear where unexpected."]],
+  remember:["Honest assessment beats hope every time.","Modify the plan as circumstances shift.","Never reveal your devices in advance."],
+  acts:["Before any contest, score yourself vs. the other side on the five factors and decide go/no-go from the tally.","Plan in private; let the world see only what serves you."]},
+
+ {n:"II",seal:"戰",title:"Waging War",essence:"Speed and cost-control. A drawn-out fight ruins even the winner.",
+  says:"<b>Sun Tzu:</b> There is no instance of a country having benefited from prolonged warfare. Let your great object be victory, not lengthy campaigns.",
+  table:[["The hidden cost","War drains treasure and morale; protracted effort dulls weapons and exhausts the state."],
+         ["Forage on the enemy","One cartload taken from the enemy is worth twenty hauled from home — fight in ways that feed themselves."],
+         ["Absorb your wins","Reward those who capture, treat prisoners well, and fold gains into your own strength."]],
+  remember:["Time is the cost nobody budgets for.","Stupid haste is bad, but clever delay has never been seen.","Convert each win into fuel for the next."],
+  acts:["Set a deadline and a budget before you start anything contested.","If a fight is outlasting its value, end it — don't sink more in."]},
+
+ {n:"III",seal:"謀",title:"Attack by Stratagem",essence:"Win whole, not in pieces — ideally without fighting at all.",
+  says:"<b>Sun Tzu:</b> Supreme excellence is breaking the enemy's resistance without fighting. Know the enemy and yourself, and a hundred battles hold no fear.",
+  table:[["Hierarchy of skill","Best: foil his plans. Next: break his alliances. Next: beat his army. Worst: besiege his walls."],
+         ["Force ratios","10:1 surround · 5:1 attack · 2:1 divide · equal, engage · weaker, evade · hopeless, withdraw."],
+         ["How leaders self-sabotage","Commanding from afar in ignorance; applying the wrong rulebook; misusing capable people."],
+         ["Five keys to victory","Know when to fight; handle big & small forces; unite everyone's spirit; be prepared & wait; have skill and freedom from interference."]],
+  remember:["The cheapest victory needs no battle.","You are the bulwark — the team is only as strong as your judgment.","Don't let a distant boss dictate front-line moves."],
+  acts:["For any conflict, first hunt for the win that avoids the fight.","Pick targets where your strength clearly outmatches theirs."]},
+
+ {n:"IV",seal:"形",title:"Tactical Dispositions",essence:"Make yourself unbeatable first; then opportunity does the rest.",
+  says:"<b>Sun Tzu:</b> The good fighters of old first put themselves beyond defeat, then waited for the chance to defeat the enemy. He wins by making no mistakes.",
+  table:[["Defense vs. offense","Not losing is in your hands; winning depends on the opening the other side gives you."],
+         ["Quiet victories","The true master wins so easily it earns no fame for wisdom or courage — he simply makes no mistakes."],
+         ["Five-step method","Measurement → Estimation → Calculation → Balancing of chances → Victory."]],
+  remember:["Secure your downside before chasing upside.","The victor wins first, then goes to battle to confirm it.","An obvious, flashy win isn't the highest skill."],
+  acts:["Shore up your weak points so you genuinely cannot lose.","Act only when the math already tilts your way."]},
+
+ {n:"V",seal:"勢",title:"Energy & Momentum",essence:"Combine the expected and the surprising to build unstoppable momentum.",
+  says:"<b>Sun Tzu:</b> Energy is like the bending of a crossbow; decision, the releasing of the trigger — momentum like a round stone rolled down a mountain.",
+  table:[["Big = small","Leading thousands is the same as leading a few — it's a question of structure and signals."],
+         ["Direct + indirect","The standard move (cheng) and the surprise (ch'i) combine into endless variations — like five notes into countless melodies."],
+         ["Combined energy","Win by the momentum of the whole system, not by demanding too much of individuals."]],
+  remember:["Position and timing beat raw individual effort.","Apparent disorder can hide perfect discipline.","Set things up so momentum carries the outcome."],
+  acts:["Pair your standard play with one well-timed surprise.","Build the slope first, then release — let the stone roll itself."]},
+
+ {n:"VI",seal:"虛",title:"Weak Points & Strong",essence:"Choose where and when. Arrive first, stay fluid, strike the gaps.",
+  says:"<b>Sun Tzu:</b> Military tactics are like water — avoid what is strong, strike what is weak. He shapes his victory in relation to the foe he faces.",
+  table:[["Set the terms","Be first to the field and rested; impose your will rather than have it imposed on you."],
+         ["Make him spread thin","Force him to defend everywhere — defend everywhere and he is weak everywhere."],
+         ["Concentrate & conceal","Hide your plan, mass your strength on his thin point; many of you against few of him."],
+         ["Stay unpredictable","Never repeat the tactic that just won — water keeps no constant shape."]],
+  remember:["Pick the battlefield; don't let it pick you.","Flexibility beats a fixed plan.","Adapt the play to the specific opponent."],
+  acts:["Aim your full strength at the other side's thinnest point.","Vary your approach so you can't be read."]},
+
+ {n:"VII",seal:"爭",title:"Maneuvering",essence:"The hard art of turning the long road into the short — and managing morale.",
+  says:"<b>Sun Tzu:</b> Be swift as the wind, quiet as the forest, fierce as fire, immovable as a mountain. Avoid an army whose spirit is keen; attack it when it flags.",
+  table:[["Don't over-reach","Force-march your people too hard and only a fraction arrives intact."],
+         ["Know before you commit","No alliances until you know your neighbors' designs; no march without knowing the ground."],
+         ["Manage morale & timing","Spirit is keenest in the morning and fades by evening — strike the tired, not the fresh."],
+         ["Leave an exit","Don't surround completely; never press a desperate foe — give them a way out."]],
+  remember:["Don't win the race and lose your team.","Energy and morale are tactical resources, not afterthoughts.","Cornered people fight hardest."],
+  acts:["Pace effort so people don't burn out before the goal.","When you have the upper hand, leave the other side a face-saving exit."]},
+
+ {n:"VIII",seal:"變",title:"Variation in Tactics",essence:"Rules are servants, not masters. Adapt — and know your own fatal flaws.",
+  says:"<b>Sun Tzu:</b> There are roads not to follow, orders not to obey. Rely not on the enemy not coming, but on your own readiness to receive him.",
+  table:[["Adapt or fail","Knowing the terrain is useless if you can't vary your plans to suit it."],
+         ["Blend pro & con","Weigh advantage and disadvantage together in every decision."],
+         ["The Five Fatal Faults","Recklessness · cowardice · a hot temper · thin-skinned pride · over-attachment to people."]],
+  remember:["Prepare for what's possible, not what you hope.","Your own temperament can sink you faster than any rival.","An unassailable position beats a lucky one."],
+  acts:["Audit yourself for the five faults before they cost you.","Build so that the other side's choices can't hurt you — then their plans don't matter."]},
+
+ {n:"IX",seal:"行",title:"The Army on the March",essence:"Read the terrain, read the signals; lead with care and firm discipline.",
+  says:"<b>Sun Tzu:</b> Treat your soldiers with humanity, but keep them under control with iron discipline — this is a certain road to victory.",
+  table:[["Position well","Take the high, healthy, well-supplied ground; let danger lie in front and safety behind."],
+         ["Read the signals","Dust, birds, envoys, and behavior all betray true intent — watch what people do, not what they say."],
+         ["Care + discipline","Bond with people first; then enforce. Confidence plus obedience makes the gain mutual."]],
+  remember:["Behavior reveals intention.","Respect earns followership; discipline keeps it.","Punish before you've earned trust and it backfires."],
+  acts:["Learn to read the room before you act.","Build the relationship first, then hold the line on standards."]},
+
+ {n:"X",seal:"地",title:"Terrain",essence:"Match your move to the ground; most defeats are self-inflicted.",
+  says:"<b>Sun Tzu:</b> The general who advances without coveting fame and retreats without fearing disgrace is the jewel of the kingdom. Regard your soldiers as your children.",
+  table:[["Six grounds","Accessible · entangling · temporizing · narrow passes · precipitous heights · distant — each needs a different move."],
+         ["Six self-inflicted disasters","Flight, insubordination, collapse, ruin, disorganization, rout — none from fate, all from leadership."],
+         ["When to defy the boss","Fight if you'll surely win, though forbidden; refuse if you'll surely lose, though ordered."]],
+  remember:["Own the loss before blaming circumstances.","Care and authority are both required — one without the other fails.","Do right by the mission, even against a wrong order."],
+  acts:["When you fail, look first at your own decisions.","Be generous with people and uncompromising about standards."]},
+
+ {n:"XI",seal:"九",title:"The Nine Situations",essence:"Different situations demand opposite responses; commitment and unity are weapons.",
+  says:"<b>Sun Tzu:</b> Throw your people into a position with no escape and they will prefer death to flight. On desperate ground, fight.",
+  table:[["Nine grounds","From dispersive (home turf) to desperate (no escape) — each calls for a specific response."],
+         ["Commitment creates cohesion","The deeper the stakes and the fewer the exits, the harder everyone pulls together."],
+         ["Shared danger unites","Even enemies in the same storm-tossed boat help each other like the left hand helps the right."],
+         ["Leadership posture","Be quiet and secret; seize what the rival holds dear; at the decisive moment, burn the boats."]],
+  remember:["Context dictates strategy — read the situation type first.","Removing your own exit can unlock maximum effort.","A shared stake binds people faster than any speech."],
+  acts:["Diagnose the situation before choosing a tactic.","To rally a team, give them one common stake — and sometimes, no plan B."]},
+
+ {n:"XII",seal:"火",title:"The Attack by Fire",essence:"Use high-leverage tools precisely — and never act out of anger.",
+  says:"<b>Sun Tzu:</b> No ruler should send troops to gratify his spleen. Anger may turn to gladness — but a destroyed kingdom cannot be revived, nor the dead brought back.",
+  table:[["Leverage with conditions","Five ways to attack with fire, each with its own timing, season, and contingency — power demands precision."],
+         ["Move only on advantage","Advance if there's gain, hold if there isn't, fight only when the position is critical."],
+         ["Emotion is the worst strategist","Never fight from pique; the enlightened leader is heedful and full of caution."]],
+  remember:["Leverage is powerful and dangerous in equal measure.","Some losses are irreversible — weigh them before acting.","Feelings pass; consequences don't."],
+  acts:["Before any irreversible move, ask: advantage, or just anger?","Cool down first; prepare your resources before you need them."]},
+
+ {n:"XIII",seal:"間",title:"The Use of Spies",essence:"Foreknowledge wins wars; information is the cheapest decisive investment.",
+  says:"<b>Sun Tzu:</b> Foreknowledge cannot come from spirits or guesswork — only from people. Be subtle! be subtle! and use intelligence in every venture.",
+  table:[["Five kinds of sources","Local, inward, converted, doomed, and surviving — different people, different vantage points."],
+         ["The key source","The converted source (a turned insider) unlocks all the others — treat them with the utmost generosity."],
+         ["Protect knowledge","Pay well for intelligence, guard it fiercely, and keep absolute secrecy."]],
+  remember:["Skimping on information to save a little is the height of folly.","Intelligence is the multiplier behind every other move.","Whoever knows first, moves first."],
+  acts:["Invest in knowing before you act — research, ask, listen.","Cultivate trusted sources and protect both what and whom you know."]}
+];
+
+const stratagems = [
+ ["If you know the enemy and know yourself, you need not fear the result of a hundred battles.","Chapter III · Attack by Stratagem"],
+ ["Supreme excellence consists of breaking the enemy's resistance without fighting.","Chapter III · Attack by Stratagem"],
+ ["All warfare is based on deception.","Chapter I · Laying Plans"],
+ ["The victorious strategist only seeks battle after the victory has been won.","Chapter IV · Tactical Dispositions"],
+ ["In war, avoid what is strong and strike at what is weak — be like water.","Chapter VI · Weak Points & Strong"],
+ ["There is no instance of a country having benefited from prolonged warfare.","Chapter II · Waging War"],
+ ["He will win who knows when to fight and when not to fight.","Chapter III · Attack by Stratagem"],
+ ["Rely not on the likelihood of the enemy not coming, but on your own readiness.","Chapter VIII · Variation in Tactics"],
+ ["When you surround an army, leave an outlet free. Do not press a desperate foe too hard.","Chapter VII · Maneuvering"],
+ ["The good general advances without coveting fame and retreats without fearing disgrace.","Chapter X · Terrain"],
+ ["Move not unless you see an advantage; fight not unless the position is critical.","Chapter XII · The Attack by Fire"],
+ ["Foreknowledge cannot be elicited from spirits — it must be obtained from people.","Chapter XIII · The Use of Spies"],
+ ["Let your rapidity be that of the wind, your immovability that of a mountain.","Chapter VII · Maneuvering"],
+ ["The good fighter puts himself into a position which makes defeat impossible.","Chapter IV · Tactical Dispositions"]
+];
+
+const domains = [
+ {id:"all",label:"Everything"},
+ {id:"life",label:"Everyday life"},
+ {id:"work",label:"Corporate worker"},
+ {id:"family",label:"Family"},
+ {id:"invest",label:"Investing"},
+ {id:"people",label:"Dealing with people"}
+];
+
+const apps = [
+ // everyday life
+ {d:["life"],src:"Ch. III · Choose your battles",h:"Not every hill is worth dying on",p:"\"He wins who knows when to fight and when not to fight.\" Before you engage, ask whether the win is worth the cost. Most fights aren't."},
+ {d:["life","people"],src:"Ch. XII · Don't act from anger",h:"Sleep on the angry message",p:"Anger turns to gladness; a sent message can't be unsent. Draft it, wait a night, and decide tomorrow whether it still serves you."},
+ {d:["life","work","invest"],src:"Ch. VI · Be like water",h:"Keep the goal, change the plan",p:"No routine survives contact with reality. Hold your aim fixed but let your methods flow around obstacles instead of breaking on them."},
+ {d:["life"],src:"Ch. II · Prize speed",h:"End the things that drag",p:"Protracted anything drains you — a stale project, a dead hobby, a grudge. Decide, finish, and free the energy for what's next."},
+ {d:["life","people"],src:"Ch. III · Win without fighting",h:"Aim for the bloodless win",p:"The best outcome is the one nobody had to fight for. Look for the solution where the other person doesn't have to lose."},
+
+ // corporate
+ {d:["work"],src:"Ch. I · The Five Factors",h:"Run a pre-mortem on any project",p:"Before committing, score it: shared purpose, timing, the landscape, leadership, and process. A weak score on any factor is a warning, not a detail."},
+ {d:["work","invest"],src:"Ch. IV · Win first, then fight",h:"Only launch what's already half-won",p:"Don't wing the big meeting. The master \"wins first and then goes to war\" — do the prep so success is decided before you walk in."},
+ {d:["work"],src:"Ch. VI · Strike the gap",h:"Don't fight the entrenched team head-on",p:"Avoid strength, find weakness. Instead of competing where others are strongest, own the underserved problem no one is solving."},
+ {d:["work","invest","people"],src:"Ch. XIII · Foreknowledge",h:"Know the room before the room",p:"Information is the cheapest edge. Talk to customers, learn stakeholders' real incentives, and read the politics before you make your move."},
+ {d:["work"],src:"Ch. III · Don't be micromanaged",h:"Push back on distant orders",p:"A ruler who commands the army from afar in ignorance \"hobbles\" it. Kindly resist a far-removed boss dictating tactics they can't see."},
+ {d:["work","life"],src:"Ch. VII · Manage timing",h:"Pitch when energy is high",p:"Morale peaks in the morning and flags by evening. Bring your big ask when attention is fresh — not at 5pm on a Friday."},
+ {d:["work","people"],src:"Ch. VIII · The Five Faults",h:"Audit your own flaws",p:"Recklessness, timidity, temper, thin-skinned pride, over-attachment. The fault that sinks you is usually one you already know about."},
+
+ // family
+ {d:["family","people"],src:"Intro & Ch. X · Lead by example",h:"Authority is earned, not declared",p:"\"A leader leads by example, not by force.\" In a household, your conduct sets the standard far more than your instructions do."},
+ {d:["family"],src:"Ch. X · Children & soldiers",h:"Care deeply — and keep real authority",p:"Regard them as your own and they'll follow you anywhere. But indulgence without authority \"spoils\" — warmth and firm limits both, not one or the other."},
+ {d:["family","people"],src:"Ch. IX · Bond, then enforce",h:"Connection before correction",p:"Discipline imposed before trust is built breeds resentment. Earn the relationship first; then the boundary lands as care, not control."},
+ {d:["family","people"],src:"Ch. VII · Leave an exit",h:"Never corner someone you love",p:"Don't press a desperate foe. In an argument, give your partner or child a way to back down without humiliation — that's how it actually ends."},
+ {d:["family","people"],src:"Ch. IX · Read the signals",h:"Watch behavior, not just words",p:"\"I'm fine\" rarely means fine. Sun Tzu read armies by their dust and birds; read your family by tone, habit, and what goes unsaid."},
+ {d:["family"],src:"Ch. XI · The shared boat",h:"Face hardship together",p:"Even rivals in one storm-tossed boat help each other. Shared challenges — not lectures — are what knit a family into one team."},
+
+ // investing
+ {d:["invest"],src:"Ch. IV · Win first",h:"Don't chase — wait for the setup",p:"The disciplined investor enters when the odds already favor them, then lets the position confirm it. Acting before the math is right is hoping, not investing."},
+ {d:["invest"],src:"Ch. II · No prolonged war",h:"Cut losses; don't bleed",p:"No campaign profits from dragging on. A losing position you \"can't sell yet\" is a protracted war draining your treasure and your attention."},
+ {d:["invest","life"],src:"Ch. III · Know yourself",h:"Your temperament is half the trade",p:"Know yourself: your real risk tolerance, your biases, the way fear and greed move you. The market is the other half — and the easier half to study."},
+ {d:["invest","people"],src:"Ch. XII · Emotion is the worst strategist",h:"Trade the plan, not the feeling",p:"Never \"fight from pique.\" Decide your rules when calm; follow them when the market makes you fearful or euphoric."},
+ {d:["invest"],src:"Ch. VI · Avoid the crowd's strength",h:"Hunt the mispriced gap",p:"Avoid strength, strike weakness. Crowding into a hyped trade is attacking the fortified wall; the edge is in what others have overlooked."},
+ {d:["invest"],src:"Ch. IV · Be unable to lose first",h:"Survive, then seek gains",p:"\"First put yourself beyond defeat.\" Size positions and diversify so no single loss can ruin you — then go looking for the upside."},
+
+ // dealing with people
+ {d:["people","work"],src:"Ch. III · Know self & other",h:"Map both sets of incentives",p:"Before any tough conversation, name what they actually want — and what your own triggers are. Half of every conflict is internal."},
+ {d:["people","life"],src:"Ch. I · All is perception",h:"Manage what others read in you",p:"People act on what they perceive. Choose deliberately what to reveal and when — calm under pressure changes how you're treated."},
+ {d:["people","family"],src:"Ch. VII · Don't press the desperate",h:"Give a graceful way out",p:"A cornered person fights hardest. Let people change their mind or back down without losing face, and they'll come your way."},
+ {d:["people"],src:"Ch. XI · What they hold dear",h:"Find what truly motivates someone",p:"\"Seize what your opponent holds dear.\" Used well, this is empathy: understand what matters most to someone and you'll find your common ground."},
+ {d:["people","life"],src:"Ch. VI · Adapt to the person",h:"No two people, same approach",p:"Water takes the shape of its vessel. The tone that works with one colleague backfires with another — read the individual, not the script."}
+];
+
+const faults = [
+ ["Recklessness","I leap before I look — and it costs me."],
+ ["Over-caution","I avoid necessary fights and miss the moment."],
+ ["A hot temper","I can be provoked into reacting against my interest."],
+ ["Thin-skinned pride","I'm too sensitive to slights and shame."],
+ ["Over-attachment","I worry so much about people I lose perspective."]
+];
+
+const verdicts = {
+ 0:"<b>The jewel of the kingdom.</b> Either you've mastered yourself — or you're not being honest in the mirror. Re-read the five and check again.",
+ 1:"<b>One flaw, well known.</b> A single named fault is a strength: you can watch for it. Make it your subject of meditation.",
+ 2:"<b>Two faults — the human condition.</b> Most capable people carry a couple. Knowing which two is exactly the self-knowledge Sun Tzu prizes.",
+ 3:"<b>Three faults in play.</b> Honest, and useful. Pick the one that costs you most this month and build a guardrail around it.",
+ 4:"<b>Four of five — a candid mirror.</b> This is good news: the leader who knows his faults can defend against them. Start with the loudest one.",
+ 5:"<b>All five.</b> Either a hard day or unusual honesty. Don't try to fix everything — choose the single fault doing the most damage and start there."
+};
+
+/* ---------- RENDER ---------- */
+function el(html){const t=document.createElement('template');t.innerHTML=html.trim();return t.content.firstChild;}
+
+// nav chips
+const chipMap=[["foundations","The Spine"],["chapters","The Thirteen"],["apply","Apply Today"],["mirror","Know Yourself"],["cheat","Cheat Sheet"]];
+const chips=document.getElementById('chips');
+chipMap.forEach(([id,label])=>chips.appendChild(el(`<a href="#${id}">${label}</a>`)));
+
+// chapters
+const list=document.getElementById('chapterList');
+chapters.forEach((c,i)=>{
+  const rows=c.table.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('');
+  const rem=c.remember.map(x=>`<li>${x}</li>`).join('');
+  const act=c.acts.map(x=>`<li>${x}</li>`).join('');
+  const ch=el(`<div class="chapter reveal" data-i="${i}">
+    <button class="chead" aria-expanded="false">
+      <span class="seal">${c.seal}</span>
+      <span class="meta">
+        <span class="kch">Chapter ${c.n}</span>
+        <h3>${c.title}</h3>
+        <p class="ess">${c.essence}</p>
+      </span>
+      <span class="chev" aria-hidden="true">+</span>
+    </button>
+    <div class="cbody"><div class="cbody-inner"><div class="cbody-pad">
+      <p class="says">${c.says}</p>
+      <div class="blocks">
+        <div>
+          <p class="lbl">Key points</p>
+          <table>${rows}</table>
+        </div>
+        <div class="side">
+          <div class="card-sm"><p class="lbl">Remember</p><ul class="tick">${rem}</ul></div>
+          <div class="card-sm act"><p class="lbl" style="color:var(--jade)">Do this</p><ul class="tick do">${act}</ul></div>
+        </div>
+      </div>
+    </div></div></div>
+  </div>`);
+  list.appendChild(ch);
+});
+
+// accordion behavior
+list.addEventListener('click',e=>{
+  const head=e.target.closest('.chead'); if(!head)return;
+  const ch=head.parentElement;
+  const open=ch.classList.toggle('open');
+  head.setAttribute('aria-expanded',open);
+  head.querySelector('.chev').textContent=open?'+':'+';
+  updateToggleLabel();
+});
+const toggleAll=document.getElementById('toggleAll');
+function updateToggleLabel(){
+  const all=[...list.querySelectorAll('.chapter')];
+  const allOpen=all.every(c=>c.classList.contains('open'));
+  toggleAll.textContent=allOpen?'Collapse all':'Expand all';
+}
+toggleAll.addEventListener('click',()=>{
+  const all=[...list.querySelectorAll('.chapter')];
+  const allOpen=all.every(c=>c.classList.contains('open'));
+  all.forEach(c=>{c.classList.toggle('open',!allOpen);c.querySelector('.chead').setAttribute('aria-expanded',!allOpen);});
+  updateToggleLabel();
+});
+// open chapter I by default
+list.querySelector('.chapter').classList.add('open');
+list.querySelector('.chead').setAttribute('aria-expanded','true');
+updateToggleLabel();
+
+// filters + apps
+const filters=document.getElementById('filters');
+domains.forEach(d=>filters.appendChild(el(`<button role="tab" data-d="${d.id}" class="${d.id==='all'?'on':''}">${d.label}</button>`)));
+const appList=document.getElementById('appList');
+const advNote=document.getElementById('advNote');
+function renderApps(filter){
+  appList.innerHTML='';
+  const tagName={life:"Everyday",work:"Work",family:"Family",invest:"Investing",people:"People"};
+  apps.filter(a=>filter==='all'||a.d.includes(filter)).forEach(a=>{
+    const primary=filter==='all'?a.d[0]:filter;
+    appList.appendChild(el(`<div class="app reveal in">
+      <span class="tag">${tagName[primary]||'Strategy'}</span>
+      <div class="src">${a.src}</div>
+      <h4>${a.h}</h4>
+      <p>${a.p}</p>
+    </div>`));
+  });
+  advNote.style.display=(filter==='invest')?'block':'none';
+}
+filters.addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b)return;
+  filters.querySelectorAll('button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');
+  renderApps(b.dataset.d);
+});
+renderApps('all');
+
+// mirror
+const fwrap=document.getElementById('faults');
+const check='<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+faults.forEach((f,i)=>fwrap.appendChild(el(`<div class="fault" data-i="${i}" role="checkbox" aria-checked="false" tabindex="0">
+  <span class="box">${check}</span><span><strong>${f[0]}</strong><small>${f[1]}</small></span></div>`)));
+const verdict=document.getElementById('verdict');
+function toggleFault(node){
+  const sel=node.classList.toggle('sel');
+  node.setAttribute('aria-checked',sel);
+  const count=fwrap.querySelectorAll('.fault.sel').length;
+  verdict.innerHTML=verdicts[count];
+}
+fwrap.addEventListener('click',e=>{const n=e.target.closest('.fault');if(n)toggleFault(n);});
+fwrap.addEventListener('keydown',e=>{if((e.key===' '||e.key==='Enter')&&e.target.classList.contains('fault')){e.preventDefault();toggleFault(e.target);}});
+
+// cheat sheet
+const sheetBody=document.querySelector('#sheet tbody');
+const oneLine=[
+ ["Plan honestly, deceive freely","Score the five factors before you commit"],
+ ["Be fast, not protracted","Set a deadline; end what drags"],
+ ["Win whole, ideally without fighting","Seek the win that needs no fight"],
+ ["Be unbeatable, then strike","Fix weaknesses before chasing gains"],
+ ["Momentum from order + surprise","Standard play + one surprise"],
+ ["Hit weakness, stay fluid","Aim strength at their thin point"],
+ ["Turn the long road short","Strike when their energy is low"],
+ ["Adapt; know your faults","Audit your five fatal flaws"],
+ ["Read terrain and signals","Watch behavior, not words"],
+ ["Match move to ground; own losses","Be generous and firm at once"],
+ ["Context dictates everything","Commit fully; bind the team"],
+ ["Use leverage; never act angry","Pause before irreversible moves"],
+ ["Foreknowledge wins","Invest in knowing before acting"]
+];
+chapters.forEach((c,i)=>{
+  sheetBody.appendChild(el(`<tr>
+    <td style="color:var(--silk-faint);font-family:var(--ui);font-size:12px">${c.n}</td>
+    <td class="s">${c.seal}</td>
+    <td class="t">${c.title}</td>
+    <td>${oneLine[i][0]}</td>
+    <td class="now">${oneLine[i][1]}</td>
+  </tr>`));
+});
+
+// draw a stratagem
+const drawBtn=document.getElementById('drawBtn');
+const drawQ=document.getElementById('drawQ');
+let last=0;
+drawBtn.addEventListener('click',()=>{
+  let idx; do{idx=Math.floor(Math.random()*stratagems.length);}while(idx===last&&stratagems.length>1);
+  last=idx;
+  drawQ.style.opacity=0;
+  setTimeout(()=>{
+    drawQ.innerHTML=`“${stratagems[idx][0]}”<span>${stratagems[idx][1]}</span>`;
+    drawQ.style.opacity=1;
+  },150);
+});
+drawQ.style.transition='opacity .15s';
+
+// scroll progress
+const prog=document.getElementById('progress');
+addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  const sc=(h.scrollTop)/(h.scrollHeight-h.clientHeight)*100;
+  prog.style.width=sc+'%';
+},{passive:true});
+
+// scroll-spy
+const navLinks=[...chips.querySelectorAll('a')];
+const secs=chipMap.map(c=>document.getElementById(c[0]));
+const spy=new IntersectionObserver(entries=>{
+  entries.forEach(en=>{
+    if(en.isIntersecting){
+      const id=en.target.id;
+      navLinks.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+id));
+    }
+  });
+},{rootMargin:"-40% 0px -55% 0px"});
+secs.forEach(s=>s&&spy.observe(s));
+
+// reveal on scroll
+const rev=new IntersectionObserver(entries=>{
+  entries.forEach(en=>{if(en.isIntersecting){en.target.classList.add('in');rev.unobserve(en.target);}});
+},{rootMargin:"0px 0px -8% 0px"});
+document.querySelectorAll('.reveal').forEach(n=>rev.observe(n));
+</script>
+</body>
+</html>
